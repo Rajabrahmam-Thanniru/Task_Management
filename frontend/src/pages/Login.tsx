@@ -18,6 +18,7 @@ function Login() {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userId", response.data.userId);
         localStorage.setItem("username", response.data.name);
+        localStorage.setItem("role", response.data.role);
         if (response.data.role === "team_lead") {
           nav("/TeamLeadHome");
         } else if (response.data.role === "client") {
