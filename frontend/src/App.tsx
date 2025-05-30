@@ -29,7 +29,7 @@ function App() {
   );
 
   return (
-    <div className="flex">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {showSidebar && <SideBar />}
       <div className="flex-1">
         <Routes>
