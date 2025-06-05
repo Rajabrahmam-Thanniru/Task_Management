@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDb from './config/db';
 import LoginRoute from './routers/LoginRoute';
+import getTeamLeadRoute from './routers/GetTeamLeadRoute';
+// import ProjectRoute from './routers/admin/projectRoutes'
+import post_project_route from './routers/admin/post_project_route';
 
 dotenv.config();
 
@@ -19,6 +22,9 @@ app.use(express.json());
 connectDb();
 
 app.use("/auth", LoginRoute);
+
+app.use("/manager", getTeamLeadRoute);
+app.use("/manager", post_project_route);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

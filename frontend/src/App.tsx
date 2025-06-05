@@ -15,6 +15,7 @@ import ShowProgress from "./pages/client/ShowProgress";
 import TeamLeadTasks from "./pages/teamlead/TeamLeadTasks";
 import TeamLeadReport from "./pages/teamlead/TeamLeadReport";
 import MyTeam from "./pages/teamlead/MyTeam";
+import AddProjects from "./pages/admin/AddProjects";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const isAuthenticated = localStorage.getItem("token");
@@ -23,7 +24,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 
 function App() {
   const location = useLocation();
-  const hideNavOnRoutes = ["/"];
+  const hideNavOnRoutes = ["/", "/manager/addprojects"];
   const showSidebar = !hideNavOnRoutes.includes(
     location.pathname.toLowerCase()
   );
@@ -54,6 +55,7 @@ function App() {
           <Route path="/manager/users" element={<ManageUsers />} />
           <Route path="manager/reports" element={<Reports />} />
           <Route path="/manager/tasks" element={<Tasks />} />
+          <Route path="/manager/addprojects" element={<AddProjects />} />
 
           {/* team lead routes*/}
           <Route

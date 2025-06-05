@@ -113,7 +113,7 @@ function SideBar(): JSX.Element {
 
         {/* User Info (Visible on All Views Now) */}
         <div className="flex flex-row items-center mt-4">
-          <div className="bg-orange-200 rounded-full p-4 inline-block">
+          <div className="bg-[#0084da] rounded-full p-4 inline-block">
             <FontAwesomeIcon icon={faUser} className="text-4xl text-white" />
           </div>
           <div className="ml-3">
@@ -152,8 +152,8 @@ function SideBar(): JSX.Element {
                   setIsOpen(false);
                 }}
                 className={`flex items-center h-10 pl-4 pr-2 rounded-2xl cursor-pointer ${
-                  isActive ? "bg-black" : "bg-[#2E4661]"
-                } text-white hover:bg-black transition-all duration-150`}
+                  isActive ? "bg-[#0084da]" : "bg-[#2E4661]"
+                } text-white hover:bg-[#0084da] transition-all duration-150`}
               >
                 <FontAwesomeIcon icon={item.icon} className="mr-3" />
                 <span>{item.name}</span>

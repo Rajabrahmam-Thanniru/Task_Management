@@ -20,13 +20,13 @@ function Login() {
         localStorage.setItem("username", response.data.name);
         localStorage.setItem("role", response.data.role);
         if (response.data.role === "team_lead") {
-          nav("/TeamLeadHome");
+          nav("/teamlead/dashboard");
         } else if (response.data.role === "client") {
-          nav("/ClientHome");
+          nav("/client/overview");
         } else if (response.data.role === "team_member") {
-          nav("/TeamMemeberHome");
+          nav("/teammember/dashboard");
         } else if (response.data.role === "manager") {
-          nav("/AdminHome");
+          nav("/manager/dashboard");
         }
       }
 
