@@ -1,7 +1,13 @@
+// src/models/projectModel.ts
 import mongoose from "mongoose";
 
-const projectSchema = new mongoose.Schema({}, { strict: false }); // Allow dynamic keys
+// Allow dynamic keys with _id as String
+const projectSchema = new mongoose.Schema(
+  { _id: String },
+  { strict: false }
+);
 
+// Dynamic model getter for different collections
 export const getProjectModel = (collectionName: string) => {
-  return mongoose.model(collectionName, projectSchema, collectionName);
+  return mongoose.models[collectionName] || mongoose.model(collectionName, projectSchema, collectionName);
 };

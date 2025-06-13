@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getProjectModel } from "../../models/projectModel";
+import { Ref } from "../../models/refModel";
 
 export const postproject = async (req: Request, res: Response): Promise<void> => {
   const { userId, projectId, projectData, collection } = req.body;
@@ -10,83 +11,103 @@ export const postproject = async (req: Request, res: Response): Promise<void> =>
   }
 
   try {
-    // Save to manager collection only if explicitly requested
-    if (collection === "manager") {
-      const ManagerModel = getProjectModel("manager");
-      let managerDoc = await ManagerModel.findOne({});
+    const { projectName, startDate, endDate, priority, teamLead, teamMembers } = projectData;
+    const teamLeadId = Object.keys(teamLead)[0];
+    const teamLeadName = teamLead[teamLeadId];
 
-      if (!managerDoc) {
-        managerDoc = new ManagerModel({ [userId]: { [projectId]: projectData } });
-      } else {
-        const managerProjects = managerDoc.get(userId) || {};
-        managerProjects[projectId] = projectData;
-        managerDoc.set(userId, managerProjects);
+    /** ===== 1. Save to Manager Collection ===== */
+    const ManagerModel = getProjectModel("manager");
+
+    // Inject projectcomp: 0
+    const managerProjectData = {
+      ...projectData,
+      projectcomp: 0,
+    };
+
+    let managerDoc = await ManagerModel.findById(userId);
+    if (!managerDoc) {
+      managerDoc = new ManagerModel({ _id: userId, [projectId]: managerProjectData });
+    } else {
+      managerDoc.set(projectId, managerProjectData);
+    }
+    await managerDoc.save();
+
+    /** ===== 2. Save to TeamLead Collection ===== */
+    const TeamLeadModel = getProjectModel("teamlead");
+
+    const teamLeadEntry = {
+      projectName,
+      startDate,
+      endDate,
+      priority,
+      taskcount: 0,
+      manager: { [userId]: projectData?.manager?.[userId] || "Manager" },
+      teamMembers,
+    };
+
+    let teamLeadDoc = await TeamLeadModel.findById(teamLeadId);
+    if (!teamLeadDoc) {
+      teamLeadDoc = new TeamLeadModel({ _id: teamLeadId, [projectName]: teamLeadEntry });
+    } else {
+      const existing = teamLeadDoc.get(projectName);
+      if (!existing) {
+        teamLeadDoc.set(projectName, teamLeadEntry);
       }
-      await managerDoc.save();
+    }
+    await teamLeadDoc.save();
 
-      // Extract necessary fields
-      const { projectName, startDate, endDate, priority, teamLead, teamMembers } = projectData;
-      const teamLeadId = Object.keys(teamLead)[0];
-      const teamLeadName = teamLead[teamLeadId];
+    /** ===== 3. Save to Each TeamMember Document ===== */
+    const TeamMemberModel = getProjectModel("teammember");
 
-      // Save to teamlead collection
-      const TeamLeadModel = getProjectModel("teamlead");
-      let teamLeadDoc = await TeamLeadModel.findOne({});
-      const teamLeadEntry = {
+    for (const memberId in teamMembers) {
+      const memberName = teamMembers[memberId];
+      const memberEntry = {
         projectName,
         startDate,
         endDate,
         priority,
-        manager: { [userId]: projectData?.manager?.[userId] || "Manager" },
-        teamMembers,
+        taskcount: 0,
+        teamLead: { [teamLeadId]: teamLeadName },
+        teamMember: { [memberId]: memberName },
       };
 
-      if (!teamLeadDoc) {
-        teamLeadDoc = new TeamLeadModel({
-          [teamLeadId]: {
-            [projectName]: teamLeadEntry,
-          },
-        });
+      let memberDoc = await TeamMemberModel.findById(memberId);
+      if (!memberDoc) {
+        memberDoc = new TeamMemberModel({ _id: memberId, [projectName]: memberEntry });
       } else {
-        const leadProjects = teamLeadDoc.get(teamLeadId) || {};
-        leadProjects[projectName] = teamLeadEntry;
-        teamLeadDoc.set(teamLeadId, leadProjects);
-      }
-      await teamLeadDoc.save();
-
-      // Save to each teammember collection
-      const TeamMemberModel = getProjectModel("teammember");
-      let teamMemberDoc = await TeamMemberModel.findOne({});
-      if (!teamMemberDoc) teamMemberDoc = new TeamMemberModel({});
-
-      for (const memberId in teamMembers) {
-        const memberEntry = {
-          projectName,
-          startDate,
-          endDate,
-          priority,
-          teamLead: { [teamLeadId]: teamLeadName },
-        };
-
-        const memberProjects = teamMemberDoc.get(memberId) || {};
-        memberProjects[projectName] = memberEntry;
-        teamMemberDoc.set(memberId, memberProjects);
+        memberDoc.set(projectName, memberEntry);
       }
 
-      await teamMemberDoc.save();
-
-      res.status(200).json({
-        message: "Project saved successfully to all collections",
-        data: {
-          manager: "saved",
-          teamLead: "saved",
-          teamMember: "saved",
-        },
-      });
-    } else {
-      res.status(400).json({ message: "Unsupported collection type" });
+      await memberDoc.save();
     }
+
+    /** ===== 4. Update Ref Collection ===== */
+    const userIdsToAdd = [teamLeadId, ...Object.keys(teamMembers)];
+    const existingRef = await Ref.findById("ids");
+
+    if (!existingRef) {
+      const newRef = new Ref({
+        _id: "ids",
+        userIds: userIdsToAdd,
+      });
+      await newRef.save();
+    } else {
+      const mergedUserIds = Array.from(new Set([...existingRef.userIds, ...userIdsToAdd]));
+      existingRef.userIds = mergedUserIds;
+      await existingRef.save();
+    }
+
+    res.status(200).json({
+      message: "Project saved successfully to all collections",
+      data: {
+        manager: "saved with projectcomp: 0",
+        teamLead: "saved with taskcount: 0 (if not duplicate)",
+        teamMember: "each saved with taskcount: 0",
+        ref: "updated with unique userIds",
+      },
+    });
   } catch (error) {
+    console.error("PostProject Error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

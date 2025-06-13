@@ -6,6 +6,8 @@ import LoginRoute from './routers/LoginRoute';
 import getTeamLeadRoute from './routers/GetTeamLeadRoute';
 // import ProjectRoute from './routers/admin/projectRoutes'
 import post_project_route from './routers/admin/post_project_route';
+import DashboardAdmin from './routers/admin/Dashboard';
+import Addtasks from './routers/admin/AddTask';
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ app.use("/auth", LoginRoute);
 
 app.use("/manager", getTeamLeadRoute);
 app.use("/manager", post_project_route);
+app.use("/manager",DashboardAdmin);
+app.use("/manager", Addtasks);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

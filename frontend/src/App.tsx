@@ -5,7 +5,7 @@ import TeamLeadHome from "./pages/teamlead/TeamLeadHome";
 import TeamMemHome from "./pages/teammem/TeamMemHome";
 import ClientHome from "./pages/client/ClientHome";
 import SideBar from "./components/SIdeBar";
-import AssignProjects from "./pages/admin/AssignProjects";
+
 import ManageUsers from "./pages/admin/ManageUsers";
 import Reports from "./pages/admin/Report";
 import Tasks from "./pages/admin/Tasks";
@@ -16,6 +16,8 @@ import TeamLeadTasks from "./pages/teamlead/TeamLeadTasks";
 import TeamLeadReport from "./pages/teamlead/TeamLeadReport";
 import MyTeam from "./pages/teamlead/MyTeam";
 import AddProjects from "./pages/admin/AddProjects";
+import type { JSX } from "react";
+import ProjectDetails from "./pages/admin/projectdetails";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const isAuthenticated = localStorage.getItem("token");
@@ -24,7 +26,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 
 function App() {
   const location = useLocation();
-  const hideNavOnRoutes = ["/", "/manager/addprojects"];
+  const hideNavOnRoutes = ["/", "/manager/addprojects", "/manager/project"];
   const showSidebar = !hideNavOnRoutes.includes(
     location.pathname.toLowerCase()
   );
@@ -44,18 +46,12 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/manager/projects"
-            element={
-              <ProtectedRoute>
-                <AssignProjects />
-              </ProtectedRoute>
-            }
-          />
+
           <Route path="/manager/users" element={<ManageUsers />} />
           <Route path="manager/reports" element={<Reports />} />
           <Route path="/manager/tasks" element={<Tasks />} />
           <Route path="/manager/addprojects" element={<AddProjects />} />
+          <Route path="/manager/project" element={<ProjectDetails />} />
 
           {/* team lead routes*/}
           <Route
