@@ -18,6 +18,8 @@ import MyTeam from "./pages/teamlead/MyTeam";
 import AddProjects from "./pages/admin/AddProjects";
 import type { JSX } from "react";
 import ProjectDetails from "./pages/admin/projectdetails";
+import ShowDetails from "./pages/teamlead/showdetails";
+import TeamMembers from "./pages/teamlead/teammember";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const isAuthenticated = localStorage.getItem("token");
@@ -26,7 +28,13 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 
 function App() {
   const location = useLocation();
-  const hideNavOnRoutes = ["/", "/manager/addprojects", "/manager/project"];
+  const hideNavOnRoutes = [
+    "/",
+    "/manager/addprojects",
+    "/manager/project",
+    "/teamlead/projectdetails",
+    "/teamlead/team-member",
+  ];
   const showSidebar = !hideNavOnRoutes.includes(
     location.pathname.toLowerCase()
   );
@@ -65,6 +73,8 @@ function App() {
           <Route path="/teamlead/tasks" element={<TeamLeadTasks />} />
           <Route path="/teamlead/reports" element={<TeamLeadReport />} />
           <Route path="/teamlead/team" element={<MyTeam />} />
+          <Route path="/teamlead/projectdetails" element={<ShowDetails />} />
+          <Route path="/teamlead/team-member" element={<TeamMembers />} />
 
           {/* team memeber routes */}
           <Route
